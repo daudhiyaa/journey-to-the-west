@@ -1,4 +1,4 @@
-import sys
+import sys, random
 
 class Cell:
     def __init__(self, x, y, dist, prev):
@@ -78,12 +78,13 @@ class Maze:
                 # print(i)
             return tmp
 
-        # function to update cell visiting status, Time O(1), Space O(1)
+    # function to update cell visiting status, Time O(1), Space O(1)
     def visit(self, cells, queue, x, y, parent):
         # out of boundary
         if x < 0 or x >= len(cells) or y < 0 or y >= len(cells[0]) or cells[x][y] == None:
             return
-            # update distance, and previous node
+
+        # update distance, and previous node
         dist = parent.dist + 1
         p = cells[x][y]
         if dist < p.dist:
@@ -91,19 +92,31 @@ class Maze:
             p.prev = parent
             queue.append(p)
 
-matrix = [
-    ["-", "-", "-", "-", "-", "-"],
-    ["-", ".", ".", ".", ".", "-"],
-    ["-", ".", "-", "-", ".", "-"],
-    ["-", ".", ".", ".", ".", "-"],
-    ["-", "-", "-", "-", "-", "-"],
-]
+lst = ['.', '#', '.', '.', '.']
+col = random.randint(10, 30)
+row = random.randint(10, 30)
+
+coin = 10
+mons = 100
+
+matrix = []
+print(col, row)
+
+for i in range(row):
+    tmp = []
+    for j in range(col):
+        tmp.append(random.choice(lst))
+    matrix.append(tmp)
+
+for i in matrix:
+    for j in i:
+        print(j, end='')
+    print('')
 
 maze = Maze()
 
-start = [1, 1]
-end = [3, 4]
-print("case 1: ")
+start = list(map(int, input("input starting point : \t").split()))
+end = list(map(int, input("input end point: \t").split()))
 solutions = maze.shortestPath(matrix, start, end)
 # print("solution is: " + str(maze.shortestPath(matrix, start, end)))
 
@@ -111,4 +124,6 @@ for i in solutions:
     matrix[i[0]][i[1]] = '*'
 
 for i in matrix:
-    print(i)
+    for j in i:
+        print(j, end='')
+    print('')
