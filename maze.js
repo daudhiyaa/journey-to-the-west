@@ -3,6 +3,41 @@ const canvasContext = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+// VARIABLES
+
+let path = [];
+let solutions = [];
+let start, end;
+
+const tc = 1;
+const boundaries = [];
+const pellets = [];
+const map = [
+  ["-", "-", "-", "-", "-", "-"],
+  ["-", ".", ".", ".", ".", "-"],
+  ["-", ".", "-", "-", ".", "-"],
+  ["-", ".", ".", ".", ".", "-"],
+  ["-", "-", "-", "-", "-", "-"],
+];
+
+const keys = {
+  w: {
+    pressed: false,
+  },
+  a: {
+    pressed: false,
+  },
+  s: {
+    pressed: false,
+  },
+  d: {
+    pressed: false,
+  },
+};
+let lastKey = "";
+
+// CLASSES
+
 class Boundary {
   static width = 40;
   static height = 40;
@@ -12,7 +47,6 @@ class Boundary {
     this.width = 40;
     this.height = 40;
     this.color = "blue";
-    // this.image = image;
   }
 
   draw() {
@@ -23,6 +57,57 @@ class Boundary {
       this.width,
       this.height
     );
+  }
+}
+
+class Player {
+  constructor({ position, velocity }) {
+    this.position = position;
+    this.velocity = velocity;
+    this.radius = 15;
+    this.color = "yellow";
+  }
+
+  draw() {
+    canvasContext.beginPath();
+    canvasContext.arc(
+      this.position.x,
+      this.position.y,
+      this.radius,
+      0,
+      Math.PI * 2
+    );
+    canvasContext.fillStyle = this.color;
+    canvasContext.fill();
+    canvasContext.closePath();
+  }
+
+  update() {
+    this.draw();
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+  }
+}
+
+class Pellet {
+  constructor({ position }) {
+    this.position = position;
+    this.radius = 3;
+    this.color = "white";
+  }
+
+  draw() {
+    canvasContext.beginPath();
+    canvasContext.arc(
+      this.position.x,
+      this.position.y,
+      this.radius,
+      0,
+      Math.PI * 2
+    );
+    canvasContext.fillStyle = this.color;
+    canvasContext.fill();
+    canvasContext.closePath();
   }
 }
 
@@ -38,9 +123,6 @@ class Cell {
   }
 }
 
-let path = [];
-let vel = [];
-
 class Maze {
   shortestPath(labyrint, start, end) {
     const sx = start[0];
@@ -48,9 +130,8 @@ class Maze {
     const dx = end[0];
     const dy = end[1];
 
-    // if start or end value is 0, then return
     if (labyrint[sx][sy] != "." || labyrint[dx][dy] != ".") {
-      console.log("start or end point cannot reached.");
+      console.log("start or end point is invalid.");
       return;
     }
 
@@ -99,8 +180,16 @@ class Maze {
         path.unshift(p);
       } while ((p = p.prev) != null);
 
-      path.forEach((now) => console.log(now.x, now.y));
+      path.forEach((now) => {
+        let tmp = [];
+        tmp.push(now.x, now.y);
+        solutions.push(tmp);
+      });
       console.log(`path length: ${path.length}`);
+
+      solutions.forEach((solution) => {
+        console.log(solution);
+      });
     }
   }
 
@@ -119,24 +208,13 @@ class Maze {
   }
 }
 
-const map = [
-  ["-", "-", "-", "-", "-", "-"],
-  ["-", ".", ".", ".", ".", "-"],
-  ["-", ".", "-", "-", ".", "-"],
-  ["-", ".", ".", ".", ".", "-"],
-  ["-", "-", "-", "-", "-", "-"],
-];
-
-const boundaries = [];
+// STARTING PROGRAM
 
 const maze = new Maze();
 
-let start, end;
-const tc = 1;
-
-for (let i = 0; i < tc; i++) {
+for (let i = 1; i <= tc; i++) {
   start = [1, 1];
-  end = [3, 1];
+  end = [3, 2];
   console.log(`CASE ${i}: `);
   maze.shortestPath(map, start, end);
 }
@@ -155,35 +233,6 @@ map.forEach((row, i) => {
   });
 });
 
-class Player {
-  constructor({ position, velocity }) {
-    this.position = position;
-    this.velocity = velocity;
-    this.radius = 15;
-    this.color = "yellow";
-  }
-
-  draw() {
-    canvasContext.beginPath();
-    canvasContext.arc(
-      this.position.x,
-      this.position.y,
-      this.radius,
-      0,
-      Math.PI * 2
-    );
-    canvasContext.fillStyle = this.color;
-    canvasContext.fill();
-    canvasContext.closePath();
-  }
-
-  update() {
-    this.draw();
-    this.position.x += this.velocity.x;
-    this.position.y += this.velocity.y;
-  }
-}
-
 const player = new Player({
   position: {
     x: Boundary.width + Boundary.width / 2,
@@ -192,6 +241,18 @@ const player = new Player({
   velocity: { x: 0, y: 0 },
 });
 
+for (let i = solutions.length - 1; i >= 0; i--) {
+  const solution = solutions[i];
+  pellets.push(
+    new Pellet({
+      position: {
+        x: Boundary.width * solution[1] + Boundary.width / 2,
+        y: Boundary.height * solution[0] + Boundary.height / 2,
+      },
+    })
+  );
+}
+
 function animate() {
   requestAnimationFrame(animate);
   canvasContext.clearRect(0, 0, canvas.width, canvas.height);
@@ -199,28 +260,33 @@ function animate() {
   boundaries.forEach((boundary) => {
     boundary.draw();
   });
+
+  for (let i = 0; i < pellets.length; i++) {
+    const pellet = pellets[i];
+    // console.log(pellet.position.x);
+    pellet.draw();
+  }
   player.update();
 
   // buat harus pressed
-  player.velocity.x = 0;
   player.velocity.y = 0;
-
-  // if (keys.w.pressed && lastKey === "w") player.velocity.y = -40;
-  // if (keys.a.pressed && lastKey === "a") player.velocity.x = -40;
-  // if (keys.s.pressed && lastKey === "s") player.velocity.y = 40;
-  // if (keys.d.pressed && lastKey === "d") player.velocity.x = 40;
+  player.velocity.x = 0;
 }
 
 for (let i = 0; i < path.length - 1; i++) {
   const xNow = path[i + 1].x - path[i].x;
   const yNow = path[i + 1].y - path[i].y;
 
-  console.log(`xNow: ${xNow}, yNow: ${yNow}`);
+  if (xNow < 0) player.velocity.y = -40;
+  else if (xNow > 0) player.velocity.y = 40;
+  else if (yNow < 0) player.velocity.x = -40;
+  else if (yNow > 0) player.velocity.x = 40;
 
-  if (xNow < 0) player.velocity.x = -40;
-  else if (xNow > 0) player.velocity.x = 40;
-  else if (yNow < 0) player.velocity.y = -40;
-  else if (yNow > 0) player.velocity.y = 40;
+  player.update();
+
+  // buat harus pressed
+  player.velocity.y = 0;
+  player.velocity.x = 0;
 }
 
 addEventListener("keydown", ({ key }) => {
