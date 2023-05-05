@@ -11,6 +11,11 @@
         padding: 0;
       }
       body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
         background-color: black;
         padding: 20px;
       }
@@ -18,22 +23,26 @@
         color: whitesmoke;
         font-family: sans-serif;
         font-size: large;
-        margin-bottom: 9px;
       }
       div {
         display: flex;
         gap: 10px;
         justify-items: center;
+        align-items: center;
+      }
+      button {
+        padding: 5px;
       }
     </style>
   </head>
   <body>
     <div>
       <p>
-        <span>Score: </span>
-        <span id="scoreEl">0</span>
+        <span>Cost: </span>
+        <span id="cost">0</span>
       </p>
       <p id="gameStatus"></p>
+      <button onclick="mulai();">Generate</button>
     </div>
     <canvas></canvas>
     <script src="maze.js"></script>
