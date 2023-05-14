@@ -105,7 +105,7 @@ function resetGame() {
 }
 
 function gameLoop() {
-    canvasContext.clearRect(0, 0, canvas.width, canvas.height)
+    context.clearRect(0, 0, canvas.width, canvas.height)
 
     clearCanvas();
     updatePacman();
@@ -114,7 +114,8 @@ function gameLoop() {
     drawPacman();
     drawMonster();
 
-    if (!gameOver) {
-        requestAnimationFrame(gameLoop)
-    }
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    gameLoop();
+});
