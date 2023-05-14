@@ -54,7 +54,7 @@ while run:
       draw_text("TREASURE HUNT", header_font, TEXT_COL, 135, 85)
       #draw start screen buttons
       if start_button.draw(screen):
-        import astar  # Import the astar.py program here
+        import algo  # Import the astar.py program here
       if guide_button.draw(screen):
         menu_state = "guide"
       if exit_button.draw(screen):
