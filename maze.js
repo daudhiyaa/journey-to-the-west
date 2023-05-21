@@ -106,6 +106,39 @@ class Pellet {
   }
 }
 
+class Ghost {
+  // static speed = 2;
+  constructor({ position, velocity, color = "red" }) {
+    this.position = position;
+    this.velocity = velocity;
+    this.radius = 15;
+    this.color = color;
+    this.prevCollisions = [];
+    // this.speed = 0;
+    this.scared = false;
+  }
+
+  draw() {
+    canvasContext.beginPath();
+    canvasContext.arc(
+      this.position.x,
+      this.position.y,
+      this.radius,
+      0,
+      Math.PI * 2
+    );
+    canvasContext.fillStyle = this.scared ? "blue" : this.color;
+    canvasContext.fill();
+    canvasContext.closePath();
+  }
+
+  update() {
+    this.draw();
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+  }
+}
+
 class Cell {
   constructor(x, y, dist, prev) {
     this.x = x;
@@ -206,6 +239,7 @@ class Maze {
 // STARTING PROGRAM
 
 function mulai() {
+  // reset variable values
   path = [];
   solutions = [];
 
@@ -260,6 +294,32 @@ function mulai() {
     velocity: { x: 0, y: 0 },
   });
 
+  const ghosts = [
+    new Ghost({
+      position: {
+        x:
+          Boundary.width * Math.floor(Math.random() * (map[0].length - 4) + 2) +
+          Boundary.width / 2,
+        y: Boundary.height + Boundary.height / 2,
+      },
+      velocity: {
+        x: 0,
+        y: 0,
+      },
+    }),
+    new Ghost({
+      position: {
+        x: Boundary.width * 6 + Boundary.width / 2,
+        y: Boundary.height * 4 + Boundary.height / 2,
+      },
+      velocity: {
+        x: 0,
+        y: 0,
+      },
+      color: "pink",
+    }),
+  ];
+
   for (let i = solutions.length - 1; i >= 0; i--) {
     const solution = solutions[i];
     pellets.push(
@@ -290,30 +350,35 @@ function mulai() {
     // buat harus pressed
     player.velocity.y = 0;
     player.velocity.x = 0;
+
+    ghosts.forEach((ghost) => {
+      ghost.update();
+    });
   }
 
-  for (let i = 0; i < path.length - 1; i++) {
-    const xNow = path[i + 1].x - path[i].x;
-    const yNow = path[i + 1].y - path[i].y;
+  let cnt = 0;
+  let i = 0;
 
-    setTimeout(() => {
+  addEventListener("keydown", ({ key }) => {
+    const xNow = solutions[cnt + 1][0] - solutions[cnt][0];
+    const yNow = solutions[cnt + 1][1] - solutions[cnt][1];
+
+    if (key === "w") {
+      i++;
+      console.log(`tes ${i}`);
+      player.velocity.y = -40;
+    } else if (key === "a") player.velocity.x = -40;
+    else if (key === "s") player.velocity.y = 40;
+    else if (key === "d") player.velocity.x = 40;
+    else if (key === "e") {
+      console.log(xNow, yNow);
       if (xNow < 0) player.velocity.y = -40;
       else if (xNow > 0) player.velocity.y = 40;
       else if (yNow < 0) player.velocity.x = -40;
       else if (yNow > 0) player.velocity.x = 40;
-
-      player.update();
-      // buat harus pressed
-      player.velocity.y = 0;
-      player.velocity.x = 0;
-    }, 2000);
-  }
-
-  addEventListener("keydown", ({ key }) => {
-    if (key === "w") player.velocity.y = -40;
-    else if (key === "a") player.velocity.x = -40;
-    else if (key === "s") player.velocity.y = 40;
-    else if (key === "d") player.velocity.x = 40;
+      cnt++;
+      // solutions.shift();
+    }
   });
 
   animate();
