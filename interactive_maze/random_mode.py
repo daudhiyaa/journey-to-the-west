@@ -86,7 +86,8 @@ class Spot:
 
     def make_path(self):
         self.color = None
-        WIN.blit(dot_img, (self.x, self.y))
+        WIN.blit(dot_img, (self.x + (gap // 2), self.y))
+        print(self.x, (self.x // 2), (self.x / 2))
 
     def draw(self, win):
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
@@ -213,7 +214,6 @@ def main(win, width):
     end = None
 
     generate_random_maze(grid, start, end)  # Add this line to generate a random maze
-
 
     run = True
     while run:
