@@ -99,7 +99,7 @@ while run:
       game_main = True
       if event.type == pygame.MOUSEBUTTONDOWN:
         if start_button.is_clicked(event.pos):  # Check if the start_button is clicked
-            import custom_mode  # Import the algo.py program here
+            menu_state = "mode"
     if event.type == pygame.QUIT:
       run = False
 
