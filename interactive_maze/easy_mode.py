@@ -4,17 +4,28 @@ import math
 from queue import Queue
 import pygame.image as img
 import pygame.transform as transform
+import tkinter as tk
 
 # Reference
 # https://youtu.be/JtiK0DOeI4A
+
+pygame.font.init()
 
 WIDTH = 800
 ROWS = 15
 gap = WIDTH // ROWS
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("Treasure Hunt")
-COIN_LIMIT = 15
 
+COIN_LIMIT = 15
+MONSTER_LIMIT = 15
+
+font_size = 50
+font_color = (255, 255, 255)  # White
+font_style = pygame.font.Font(None, font_size)  # None for default system font
+
+# Create a text surface
+text = "Hello, Pygame!"
 
 # color
 RED = (102, 0, 0)
@@ -31,12 +42,16 @@ TURQUOISE = (64, 224, 208)
 # load image
 dot_img = img.load("assets/dot_img.png")
 dot_img = transform.scale(dot_img, (gap * 0.3, gap * 0.3))
-coin_img = pygame.image.load("assets/coin.png")
-coin_img = pygame.transform.scale(coin_img, (int(gap * 0.6), int(gap * 0.6)))
+banana_coin = pygame.image.load("assets/banana_coin.png")
+banana_coin = pygame.transform.scale(banana_coin, (int(gap * 0.6), int(gap * 0.6)))
 barrier_img = pygame.image.load("assets/brick_barrier.png")
 barrier_img = pygame.transform.scale(barrier_img, (gap, gap))
-dirt_bg = pygame.image.load("assets/dirt_bg.png")
-dirt_bg = pygame.transform.scale(dirt_bg, (WIDTH, WIDTH))
+monkey_start = pygame.image.load("assets/monkey_start.png")
+monkey_start = pygame.transform.scale(monkey_start, (int(gap * 0.7), int(gap * 0.7)))
+book_end = pygame.image.load("assets/book_end.png")
+book_end = pygame.transform.scale(book_end, (int(gap * 0.7), int(gap * 0.7)))
+monster = pygame.image.load("assets/monster.png")
+monster = pygame.transform.scale(monster, (int(gap * 0.7), int(gap * 0.7)))
 
 class Spot:
     def __init__(self, row, col, width, total_rows):
@@ -50,6 +65,8 @@ class Spot:
         self.total_rows = total_rows
         self.previous = None
         self.has_coin = False
+        self.has_monster = False
+
 
     def get_pos(self):
         return self.row, self.col
@@ -64,17 +81,18 @@ class Spot:
         return self.color is None
 
     def is_start(self):
-        return self.color == yellow_start
+        return self.color is None
 
     def is_end(self):
-        return self.color == TURQUOISE
+        return self.color is None
 
     def reset(self):
         self.color = WHITE
         self.previous = None
 
     def make_start(self):
-        self.color = yellow_start
+        self.color = None
+        WIN.blit(monkey_start, (self.x + (gap // 2) - (monkey_start.get_width() // 2), self.y + (gap // 2) - (monkey_start.get_height() // 2)))
 
     def make_closed(self):
         self.color = RED
@@ -96,7 +114,9 @@ class Spot:
     def draw(self, win):
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
         if self.has_coin:
-            win.blit(coin_img, (self.x + (gap // 2) - (coin_img.get_width() // 2), self.y + (gap // 2) - (coin_img.get_height() // 2)))
+            win.blit(banana_coin, (self.x + (gap // 2) - (banana_coin.get_width() // 2), self.y + (gap // 2) - (banana_coin.get_height() // 2)))
+        if self.has_monster:
+            win.blit(monster, (self.x + (gap // 2) - (monster.get_width() // 2), self.y + (gap // 2) - (monster.get_height() // 2)))
 
     def update_neighbors(self, grid):
         self.neighbors = []
@@ -146,40 +166,81 @@ def bfs(draw, grid, start, end):
         if current != start:
             current.make_closed()
 
+    # Create a Tkinter window
+    window = tk.Tk()
+
+    # Set the window title
+    window.title("Result")
+
+    # Create a Label widget
+    label = tk.Label(window, text='Path is not found', font=("Arial", 30))
+
+    # Resize the label
+    label.config(font=("Arial", 36))
+
+    # Place the label using pack() or grid() method
+    # Using pack():
+    label.pack()
+
+    # OR
+    # Using grid():
+    # label.grid(row=0, column=0)
+
+    # Start the Tkinter event loop
+    window.mainloop()
     return False
 
-
 def reconstruct_path(current, draw):
-    # while current.previous:
-    #     current = current.previous
-    #     current.make_path()
-    #     draw()
-    path = []
+    cnt = 0
     while current.previous:
+        cnt += 1
         current = current.previous
-        path.append(current)
-
-    # Reverse the path to start from the beginning
-    path = path[::-1]
-
-    # Check if there are coins in the path
-    path_with_coins = []
-    for spot in path:
-        if spot.has_coin:
-            path_with_coins.append(spot)
-
-    # If there are coins in the path, update the path
-    if path_with_coins:
-        updated_path = [path[0]]
-        for spot in path_with_coins:
-            updated_path.append(spot)
-        updated_path.append(path[-1])
-        path = updated_path
-
-    for spot in path:
-        spot.make_path()
+        if current.has_coin:
+            cnt -= 1
+        if current.has_monster:
+            cnt += 1
+        current.make_path()
         draw()
+    print ('Cost = ', cnt)
+    text_surface = font_style.render('Your cost is ' + str(cnt), True, font_color)
+    # Get the dimensions of the text surface
+    text_width, text_height = text_surface.get_size()
+    background_surface = pygame.Surface((text_width, text_height))
+    background_surface.fill((0, 0, 0))
 
+    # Blit the text surface onto the background surface
+    background_surface.blit(text_surface, (0, 0))
+
+    # Calculate the position to center the text on the window
+    x = (WIDTH) // 3
+    y = (WIDTH) // 3
+
+    # Blit the text surface onto the window
+    # WIN.blit(background_surface, (x, y))
+
+    # Create a Tkinter window
+    window = tk.Tk()
+
+    # Set the window title
+    window.title("Result")
+
+    # Create a Label widget
+    label = tk.Label(window, text='Your cost is ' + str(cnt), font=("Arial", 30))
+
+    # Resize the label
+    label.config(font=("Arial", 36))
+
+    # Place the label using pack() or grid() method
+    # Using pack():
+    label.pack()
+
+    # OR
+    # Using grid():
+    # label.grid(row=0, column=0)
+
+    # Start the Tkinter event loop
+    window.mainloop()
+    
 
 def make_grid(rows, width):
     grid = []
@@ -209,8 +270,11 @@ def draw(win, grid, rows, width):
                 if spot.is_barrier():
                     WIN.blit(barrier_img, (spot.x, spot.y))
                 elif spot.has_coin:
-                    WIN.blit(coin_img, (spot.x + (spot.width // 2) - (coin_img.get_width() // 2),
-                                        spot.y + (spot.width // 2) - (coin_img.get_height() // 2)))
+                    WIN.blit(banana_coin, (spot.x + (spot.width // 2) - (banana_coin.get_width() // 2),
+                                        spot.y + (spot.width // 2) - (banana_coin.get_height() // 2)))
+                elif spot.has_monster:
+                    WIN.blit(monster, (spot.x + (spot.width // 2) - (monster.get_width() // 2),
+                                        spot.y + (spot.width // 2) - (monster.get_height() // 2)))
 
     draw_grid(win, rows, width)
     pygame.display.update()
@@ -236,9 +300,17 @@ def generate_random_maze(grid, start, end):
         row = random.randint(0, len(grid) - 1)
         col = random.randint(0, len(grid[0]) - 1)
         spot = grid[row][col]
-        if spot != start and spot != end and not spot.is_barrier() and not spot.has_coin:
+        if spot != start and spot != end and not spot.is_barrier() and not spot.has_coin and not spot.has_monster:
             spot.has_coin = True
             coin_count += 1
+    monster_count = 0
+    while monster_count < MONSTER_LIMIT:
+        row = random.randint(0, len(grid) - 1)
+        col = random.randint(0, len(grid[0]) - 1)
+        spot = grid[row][col]
+        if spot != start and spot != end and not spot.is_barrier() and not spot.has_coin and not spot.has_monster:
+            spot.has_monster = True
+            monster_count += 1
 
 
 def main(win, width):

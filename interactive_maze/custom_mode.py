@@ -14,14 +14,14 @@ WIN = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("Treasure Hunt")
 
 # color
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
+RED = (102, 0, 0)
+GREEN = (51, 102, 0)
 BLUE = (0, 255, 0)
-yellow_start = (242,242,0) #start point
-WHITE = (0, 0, 0) #base
-blue_barrier = (34,34,232) #barrier
+yellow_start = (242, 242, 0)  # start point
+WHITE = (0, 0, 0)  # base
+blue_barrier = (34, 34, 232)  # barrier
 PURPLE = (128, 0, 128)
-ORANGE = (255, 165 ,0)
+ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
 
@@ -86,8 +86,8 @@ class Spot:
 
 	def make_path(self):
 			self.color = None
-			WIN.blit(dot_img, (self.x, self.y))
-	
+			WIN.blit(dot_img, (self.x + (gap // 2), self.y + (gap // 2)))
+
 	def draw(self, win):
 		pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
 
@@ -95,9 +95,6 @@ class Spot:
 		self.neighbors = []
 		if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():  # DOWN
 			self.neighbors.append(grid[self.row + 1][self.col])
-
-			# if not grid[self.row + 1][self.col].previous and grid[self.row + 1][self.col] != start:
-			#     grid[self.row + 1][self.col].previous = self
 
 		if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():  # UP
 			self.neighbors.append(grid[self.row - 1][self.col])
@@ -258,7 +255,7 @@ def main(win, width):
                     end = None
                     grid = make_grid(ROWS, width)
 
-                # RESER IF BACKSPACE
+                # RESET IF BACKSPACE
                 if event.key == pygame.K_BACKSPACE:
                     start = None
                     end = None
