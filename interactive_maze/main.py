@@ -103,4 +103,17 @@ while run:
 
     pygame.display.update()
 
+  # event handler
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            game_main = True
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # Check if the start_button is clicked
+                if start_button.is_clicked(event.pos):
+                    menu_state = "mode"
+        if event.type == pygame.QUIT:
+            run = False
+
+    pygame.display.update()
+
 pygame.quit()

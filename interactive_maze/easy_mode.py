@@ -13,10 +13,12 @@ ROWS = 15
 gap = WIDTH // ROWS
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("Treasure Hunt")
+COIN_LIMIT = 15
+
 
 # color
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
+RED = (102, 0, 0)
+GREEN = (51, 102, 0)
 BLUE = (0, 255, 0)
 yellow_start = (242, 242, 0)  # start point
 WHITE = (0, 0, 0)  # base
@@ -29,6 +31,8 @@ TURQUOISE = (64, 224, 208)
 # load image
 dot_img = img.load("assets/dot_img.png")
 dot_img = transform.scale(dot_img, (gap * 0.3, gap * 0.3))
+coin_img = pygame.image.load("assets/coin.png")
+coin_img = pygame.transform.scale(coin_img, (int(gap * 0.6), int(gap * 0.6)))
 barrier_img = pygame.image.load("assets/brick_barrier.png")
 barrier_img = pygame.transform.scale(barrier_img, (gap, gap))
 dirt_bg = pygame.image.load("assets/dirt_bg.png")
@@ -45,6 +49,7 @@ class Spot:
         self.width = width
         self.total_rows = total_rows
         self.previous = None
+        self.has_coin = False
 
     def get_pos(self):
         return self.row, self.col
@@ -86,10 +91,12 @@ class Spot:
 
     def make_path(self):
         self.color = None
-        WIN.blit(dot_img, (self.x, self.y))
+        WIN.blit(dot_img, (self.x + (gap // 2), self.y + (gap // 2)))
 
     def draw(self, win):
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
+        if self.has_coin:
+            win.blit(coin_img, (self.x + (gap // 2) - (coin_img.get_width() // 2), self.y + (gap // 2) - (coin_img.get_height() // 2)))
 
     def update_neighbors(self, grid):
         self.neighbors = []
@@ -143,9 +150,34 @@ def bfs(draw, grid, start, end):
 
 
 def reconstruct_path(current, draw):
+    # while current.previous:
+    #     current = current.previous
+    #     current.make_path()
+    #     draw()
+    path = []
     while current.previous:
         current = current.previous
-        current.make_path()
+        path.append(current)
+
+    # Reverse the path to start from the beginning
+    path = path[::-1]
+
+    # Check if there are coins in the path
+    path_with_coins = []
+    for spot in path:
+        if spot.has_coin:
+            path_with_coins.append(spot)
+
+    # If there are coins in the path, update the path
+    if path_with_coins:
+        updated_path = [path[0]]
+        for spot in path_with_coins:
+            updated_path.append(spot)
+        updated_path.append(path[-1])
+        path = updated_path
+
+    for spot in path:
+        spot.make_path()
         draw()
 
 
@@ -160,12 +192,6 @@ def make_grid(rows, width):
 
     return grid
 
-def generate_random_maze(grid, start, end):
-    for row in grid:
-        for spot in row:
-            if spot != start and spot != end:
-                if random.random() < 0.3:
-                    spot.make_barrier()
 
 def draw_grid(win, rows, width):
     gap = width // rows
@@ -176,14 +202,15 @@ def draw_grid(win, rows, width):
 
 
 def draw(win, grid, rows, width):
-    # win.blit(dirt_bg, (0, 0))  # Menampilkan gambar background
-
     for row in grid:
         for spot in row:
             if spot.color is not None:  # Hanya gambar sel yang memiliki warna
                 spot.draw(win)
                 if spot.is_barrier():
                     WIN.blit(barrier_img, (spot.x, spot.y))
+                elif spot.has_coin:
+                    WIN.blit(coin_img, (spot.x + (spot.width // 2) - (coin_img.get_width() // 2),
+                                        spot.y + (spot.width // 2) - (coin_img.get_height() // 2)))
 
     draw_grid(win, rows, width)
     pygame.display.update()
@@ -204,6 +231,14 @@ def generate_random_maze(grid, start, end):
             if spot != start and spot != end:
                 if random.random() < 0.3:  # Adjust the probability of barriers here
                     spot.make_barrier()
+    coin_count = 0
+    while coin_count < COIN_LIMIT:
+        row = random.randint(0, len(grid) - 1)
+        col = random.randint(0, len(grid[0]) - 1)
+        spot = grid[row][col]
+        if spot != start and spot != end and not spot.is_barrier() and not spot.has_coin:
+            spot.has_coin = True
+            coin_count += 1
 
 
 def main(win, width):
@@ -213,7 +248,6 @@ def main(win, width):
     end = None
 
     generate_random_maze(grid, start, end)  # Add this line to generate a random maze
-
 
     run = True
     while run:
@@ -260,7 +294,7 @@ def main(win, width):
                     end = None
                     grid = make_grid(ROWS, width)
 
-                # RESER IF BACKSPACE
+                # RESET IF BACKSPACE
                 if event.key == pygame.K_BACKSPACE:
                     start = None
                     end = None
