@@ -1,0 +1,9 @@
+RED = (102, 0, 0)
+GREEN = (51, 102, 0)
+YELLOW = (242, 242, 0)  # start point
+TURQUOISE = (64, 224, 208)  # finish point
+WHITE = (0, 0, 0)  # base
+BLUE = (34, 34, 232)  # barrier
+PURPLE = (128, 0, 128)
+ORANGE = (255, 165, 0)
+GREY = (128, 128, 128)

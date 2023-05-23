@@ -1,12 +1,15 @@
 import pygame
 import button
 
+# Reference
+# https://youtu.be/JtiK0DOeI4A
+
 pygame.init()
 pygame.mixer.init()
 
 pygame.mixer.music.load('assets/sound/jetpack_joyride.mp3')
 pygame.mixer.music.play(-1, 0.0)
-pygame.mixer.music.set_volume(0.13)
+pygame.mixer.music.set_volume(0.25)
 
 # create game window
 SCREEN_WIDTH = 800
