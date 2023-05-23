@@ -1,11 +1,10 @@
 import pygame
-import math
-from queue import Queue
 import pygame.image as img
 import pygame.transform as transform
+from queue import Queue
 
-#	 Reference
-#	https://youtu.be/JtiK0DOeI4A
+# Reference
+# https://youtu.be/JtiK0DOeI4A
 
 WIDTH = 800
 ROWS = 25
@@ -13,19 +12,19 @@ gap = WIDTH // ROWS
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("Treasure Hunt")
 
-# color
+# colors
 RED = (102, 0, 0)
 GREEN = (51, 102, 0)
 BLUE = (0, 255, 0)
-yellow_start = (242, 242, 0)  # start point
+YELLOW = (242, 242, 0) # start point
+TURQUOISE = (64, 224, 208) # finish point
 WHITE = (0, 0, 0)  # base
-blue_barrier = (34, 34, 232)  # barrier
+BLUE = (34, 34, 232)  # barrier
 PURPLE = (128, 0, 128)
 ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
-TURQUOISE = (64, 224, 208)
 
-# load image 
+# load image
 dot_img = img.load("assets/dot_img.png")
 dot_img = transform.scale(dot_img, (gap * 0.3, gap * 0.3))
 barrier_img = pygame.image.load("assets/brick_barrier.png")
@@ -34,80 +33,81 @@ dirt_bg = pygame.image.load("assets/dirt_bg.png")
 dirt_bg = pygame.transform.scale(dirt_bg, (WIDTH, WIDTH))
 
 class Spot:
-	def __init__(self, row, col, width, total_rows):
-		self.row = row
-		self.col = col
-		self.x = row * width
-		self.y = col * width
-		self.color = WHITE
-		self.neighbors = []
-		self.width = width
-		self.total_rows = total_rows
-		self.previous = None
+    def __init__(self, row, col, width, total_rows):
+        self.row = row
+        self.col = col
+        self.x = row * width
+        self.y = col * width
+        self.color = WHITE
+        self.neighbors = []
+        self.width = width
+        self.total_rows = total_rows
+        self.previous = None
 
+    def get_pos(self):
+        return self.row, self.col
 
-	def get_pos(self):
-		return self.row, self.col
+    def is_closed(self):
+        return self.color == RED
 
-	def is_closed(self):
-		return self.color == RED
+    def is_open(self):
+        return self.color == GREEN
 
-	def is_open(self):
-		return self.color == GREEN
+    def is_barrier(self):
+        return self.color is None
 
-	def is_barrier(self):
-		return self.color is None
+    def is_start(self):
+        return self.color == YELLOW
 
-	def is_start(self):
-		return self.color == yellow_start
+    def is_end(self):
+        return self.color == TURQUOISE
 
-	def is_end(self):
-		return self.color == TURQUOISE
+    def reset(self):
+        self.color = WHITE
+        self.previous = None
 
-	def reset(self):
-		self.color = WHITE
-		self.previous = None
+    def make_start(self):
+        self.color = YELLOW
 
-	def make_start(self):
-		self.color = yellow_start
+    def make_closed(self):
+        self.color = RED
 
-	def make_closed(self):
-		self.color = RED
+    def make_open(self):
+        self.color = GREEN
 
-	def make_open(self):
-		self.color = GREEN
+    def make_barrier(self):
+        self.color = None
+        WIN.blit(barrier_img, (self.x, self.y))
 
-	def make_barrier(self):
-			self.color = None
-			WIN.blit(barrier_img, (self.x, self.y))
+    def make_end(self):
+        self.color = TURQUOISE
 
-	def make_end(self):
-		self.color = TURQUOISE
+    def make_path(self):
+        self.color = None
+        WIN.blit(dot_img, (self.x + (gap // 2), self.y + (gap // 2)))
 
-	def make_path(self):
-			self.color = None
-			WIN.blit(dot_img, (self.x + (gap // 2), self.y + (gap // 2)))
+    def draw(self, win):
+        pygame.draw.rect(
+            win, self.color, (self.x, self.y, self.width, self.width))
 
-	def draw(self, win):
-		pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
+    def update_neighbors(self, grid):
+        self.neighbors = []
+        # DOWN
+        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():
+            self.neighbors.append(grid[self.row + 1][self.col])
 
-	def update_neighbors(self, grid):
-		self.neighbors = []
-		if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():  # DOWN
-			self.neighbors.append(grid[self.row + 1][self.col])
+        if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():  # UP
+            self.neighbors.append(grid[self.row - 1][self.col])
 
-		if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():  # UP
-			self.neighbors.append(grid[self.row - 1][self.col])
+        # RIGHT
+        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():
+            self.neighbors.append(grid[self.row][self.col + 1])
 
-		if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():  # RIGHT
-			self.neighbors.append(grid[self.row][self.col + 1])
+        if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():  # LEFT
+            self.neighbors.append(grid[self.row][self.col - 1])
 
-		if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():  # LEFT
-			self.neighbors.append(grid[self.row][self.col - 1])
-
-	def __lt__(self, other):
-		return False
-
+    def __lt__(self, other):
+        return False
 
 def bfs(draw, grid, start, end):
     visited = set()
@@ -141,24 +141,22 @@ def bfs(draw, grid, start, end):
 
     return False
 
-
 def reconstruct_path(current, draw):
     while current.previous:
         current = current.previous
         current.make_path()
         draw()
 
-
 def make_grid(rows, width):
-	grid = []
-	gap = width // rows
-	for i in range(rows):
-		grid.append([])
-		for j in range(rows):
-			spot = Spot(i, j, gap, rows)
-			grid[i].append(spot)
+    grid = []
+    gap = width // rows
+    for i in range(rows):
+        grid.append([])
+        for j in range(rows):
+            spot = Spot(i, j, gap, rows)
+            grid[i].append(spot)
 
-	return grid
+    return grid
 
 def make_grid(rows, width):
     grid = []
@@ -172,12 +170,11 @@ def make_grid(rows, width):
     return grid
 
 def draw_grid(win, rows, width):
-	gap = width // rows
-	for i in range(rows):
-		pygame.draw.line(win, GREY, (0, i * gap), (width, i * gap))
-		for j in range(rows):
-			pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
-
+    gap = width // rows
+    for i in range(rows):
+        pygame.draw.line(win, GREY, (0, i * gap), (width, i * gap))
+        for j in range(rows):
+            pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
 
 def draw(win, grid, rows, width):
     # win.blit(dirt_bg, (0, 0))  # Menampilkan gambar background
@@ -192,16 +189,14 @@ def draw(win, grid, rows, width):
     draw_grid(win, rows, width)
     pygame.display.update()
 
-
 def get_clicked_pos(pos, rows, width):
-	gap = width // rows
-	y, x = pos
+    gap = width // rows
+    y, x = pos
 
-	row = y // gap
-	col = x // gap
+    row = y // gap
+    col = x // gap
 
-	return row, col
-
+    return row, col
 
 def main(win, width):
     # ROWS = 25

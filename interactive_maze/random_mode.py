@@ -1,9 +1,8 @@
 import pygame
 import random
-import math
-from queue import Queue
 import pygame.image as img
 import pygame.transform as transform
+from queue import Queue
 
 # Reference
 # https://youtu.be/JtiK0DOeI4A
@@ -14,17 +13,17 @@ gap = WIDTH // ROWS
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("Treasure Hunt")
 
-# color
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
+# colors
+RED = (102, 0, 0)
+GREEN = (51, 102, 0)
 BLUE = (0, 255, 0)
-yellow_start = (242, 242, 0)  # start point
+YELLOW = (242, 242, 0)  # start point
+TURQUOISE = (64, 224, 208)  # finish point
 WHITE = (0, 0, 0)  # base
-blue_barrier = (34, 34, 232)  # barrier
+BLUE = (34, 34, 232)  # barrier
 PURPLE = (128, 0, 128)
 ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
-TURQUOISE = (64, 224, 208)
 
 # load image
 dot_img = img.load("assets/dot_img.png")
@@ -59,7 +58,7 @@ class Spot:
         return self.color is None
 
     def is_start(self):
-        return self.color == yellow_start
+        return self.color == YELLOW
 
     def is_end(self):
         return self.color == TURQUOISE
@@ -69,7 +68,7 @@ class Spot:
         self.previous = None
 
     def make_start(self):
-        self.color = yellow_start
+        self.color = YELLOW
 
     def make_closed(self):
         self.color = RED
@@ -89,17 +88,20 @@ class Spot:
         WIN.blit(dot_img, (self.x, self.y))
 
     def draw(self, win):
-        pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
+        pygame.draw.rect(
+            win, self.color, (self.x, self.y, self.width, self.width))
 
     def update_neighbors(self, grid):
         self.neighbors = []
-        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():  # DOWN
+        # DOWN
+        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():
             self.neighbors.append(grid[self.row + 1][self.col])
 
         if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():  # UP
             self.neighbors.append(grid[self.row - 1][self.col])
 
-        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():  # RIGHT
+        # RIGHT
+        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():
             self.neighbors.append(grid[self.row][self.col + 1])
 
         if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():  # LEFT
@@ -107,7 +109,6 @@ class Spot:
 
     def __lt__(self, other):
         return False
-
 
 def bfs(draw, grid, start, end):
     visited = set()
@@ -141,13 +142,11 @@ def bfs(draw, grid, start, end):
 
     return False
 
-
 def reconstruct_path(current, draw):
     while current.previous:
         current = current.previous
         current.make_path()
         draw()
-
 
 def make_grid(rows, width):
     grid = []
@@ -174,7 +173,6 @@ def draw_grid(win, rows, width):
         for j in range(rows):
             pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
 
-
 def draw(win, grid, rows, width):
     # win.blit(dirt_bg, (0, 0))  # Menampilkan gambar background
 
@@ -187,7 +185,6 @@ def draw(win, grid, rows, width):
 
     draw_grid(win, rows, width)
     pygame.display.update()
-
 
 def get_clicked_pos(pos, rows, width):
     gap = width // rows
@@ -205,15 +202,14 @@ def generate_random_maze(grid, start, end):
                 if random.random() < 0.3:  # Adjust the probability of barriers here
                     spot.make_barrier()
 
-
 def main(win, width):
     grid = make_grid(ROWS, width)
 
     start = None
     end = None
 
-    generate_random_maze(grid, start, end)  # Add this line to generate a random maze
-
+    # Add this line to generate a random maze
+    generate_random_maze(grid, start, end)
 
     run = True
     while run:
