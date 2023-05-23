@@ -36,17 +36,17 @@ ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 
 # load image
-dot_img = img.load("assets/dot_img.png")
+dot_img = img.load("assets/img/dot_img.png")
 dot_img = transform.scale(dot_img, (gap * 0.3, gap * 0.3))
-banana_coin = pygame.image.load("assets/banana_coin.png")
+banana_coin = pygame.image.load("assets/img/banana_coin.png")
 banana_coin = pygame.transform.scale(banana_coin, (int(gap * 0.6), int(gap * 0.6)))
-barrier_img = pygame.image.load("assets/brick_barrier.png")
+barrier_img = pygame.image.load("assets/img/brick_barrier.png")
 barrier_img = pygame.transform.scale(barrier_img, (gap, gap))
-monkey_start = pygame.image.load("assets/monkey_start.png")
+monkey_start = pygame.image.load("assets/img/monkey_start.png")
 monkey_start = pygame.transform.scale(monkey_start, (int(gap * 0.7), int(gap * 0.7)))
-book_end = pygame.image.load("assets/book_end.png")
+book_end = pygame.image.load("assets/img/book_end.png")
 book_end = pygame.transform.scale(book_end, (int(gap * 0.7), int(gap * 0.7)))
-monster = pygame.image.load("assets/monster.png")
+monster = pygame.image.load("assets/img/monster.png")
 monster = pygame.transform.scale(monster, (int(gap * 0.7), int(gap * 0.7)))
 
 class Spot:

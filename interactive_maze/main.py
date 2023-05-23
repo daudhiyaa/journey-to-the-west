@@ -4,9 +4,9 @@ import button
 pygame.init()
 pygame.mixer.init()
 
-pygame.mixer.music.load('assets/bgm.mp3')
+pygame.mixer.music.load('assets/sound/jetpack_joyride.mp3')
 pygame.mixer.music.play(-1, 0.0)
-pygame.mixer.music.set_volume(0.05)
+pygame.mixer.music.set_volume(0.13)
 
 # create game window
 SCREEN_WIDTH = 800
@@ -24,21 +24,21 @@ TEXT_COL = (0, 0, 0)
 
 # load images
 # background
-startup_img = pygame.image.load("assets/startup_img.png")
-guidepage_img = pygame.image.load("assets/guide_page.png")
-main_img = pygame.image.load("assets/main_img.png")
-modepage_img = pygame.image.load("assets/mode_page.png")
+startup_img = pygame.image.load("assets/img/startup_img.png")
+guidepage_img = pygame.image.load("assets/img/guide_page.png")
+main_img = pygame.image.load("assets/img/main_img.png")
+modepage_img = pygame.image.load("assets/img/mode_page.png")
 # main menu
-start_img = pygame.image.load("assets/start_img.png")
-guide_img = pygame.image.load("assets/guide_img.png")
-exit_img = pygame.image.load("assets/exit_img.png")
-back_img = pygame.image.load("assets/back_img.png")
+start_img = pygame.image.load("assets/img/start_img.png")
+guide_img = pygame.image.load("assets/img/guide_img.png")
+exit_img = pygame.image.load("assets/img/exit_img.png")
+back_img = pygame.image.load("assets/img/back_img.png")
 # mode menu
-easy_mode = pygame.image.load("assets/easy_mode.png")
-medium_mode = pygame.image.load("assets/medium_mode.png")
-hard_mode = pygame.image.load("assets/hard_mode.png")
-random_mode = pygame.image.load("assets/random_mode.png")
-custom_mode = pygame.image.load("assets/custom_mode.png")
+easy_mode = pygame.image.load("assets/img/easy_mode.png")
+medium_mode = pygame.image.load("assets/img/medium_mode.png")
+hard_mode = pygame.image.load("assets/img/hard_mode.png")
+random_mode = pygame.image.load("assets/img/random_mode.png")
+custom_mode = pygame.image.load("assets/img/custom_mode.png")
 
 # create button instances
 # main menu

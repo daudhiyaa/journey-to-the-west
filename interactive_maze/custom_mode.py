@@ -25,11 +25,11 @@ ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 
 # load image
-dot_img = img.load("assets/dot_img.png")
+dot_img = img.load("assets/img/dot_img.png")
 dot_img = transform.scale(dot_img, (gap * 0.3, gap * 0.3))
-barrier_img = pygame.image.load("assets/brick_barrier.png")
+barrier_img = pygame.image.load("assets/img/brick_barrier.png")
 barrier_img = pygame.transform.scale(barrier_img, (gap, gap))
-dirt_bg = pygame.image.load("assets/dirt_bg.png")
+dirt_bg = pygame.image.load("assets/img/dirt_bg.png")
 dirt_bg = pygame.transform.scale(dirt_bg, (WIDTH, WIDTH))
 
 class Spot:
