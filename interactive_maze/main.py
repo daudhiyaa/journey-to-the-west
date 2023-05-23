@@ -1,5 +1,6 @@
 import pygame
 import button
+from musics import *
 
 # Reference
 # https://youtu.be/JtiK0DOeI4A
@@ -7,7 +8,7 @@ import button
 pygame.init()
 pygame.mixer.init()
 
-pygame.mixer.music.load('assets/sound/jetpack_joyride.mp3')
+pygame.mixer.music.load(JETPACK_JOYRIDE)
 pygame.mixer.music.play(-1, 0.0)
 pygame.mixer.music.set_volume(0.25)
 
