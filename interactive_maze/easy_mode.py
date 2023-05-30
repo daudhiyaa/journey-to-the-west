@@ -7,10 +7,13 @@ from config_levels import *
 
 pygame.font.init()
 
+# BASE INITIALIZATION
 gap = WIDTH // ROWS_EASY
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("Treasure Hunt")
 
+# 'CELL' CLASS
+# Cell inside maze
 class Spot:
     def __init__(self, row, col, width, total_rows):
         self.row = row
@@ -24,51 +27,47 @@ class Spot:
         self.previous = None
         self.has_coin = False
         self.has_monster = False
-
+    
+    # GET POSITION (X and Y)
     def get_pos(self):
         return self.row, self.col
-
-    def is_closed(self):
-        return self.color == colors.RED
-
-    def is_open(self):
-        return self.color == colors.GREEN
-
-    def is_barrier(self):
-        return self.color is None
-
-    def is_start(self):
-        return self.color is None
-
-    def is_end(self):
-        return self.color is None
-
+    
+    # RESET TO BASE MAZE
     def reset(self):
         self.color = colors.WHITE
         self.previous = None
+    
+    # CHECK IS BARRIER OR NOT
+    def is_barrier(self):
+        return self.color is None
 
+    # DRAW STARTING POINT
     def make_start(self):
         self.color = None
         WIN.blit(IMAGES_EASY['monkey_start'], (self.x + (gap // 2) - (IMAGES_EASY['monkey_start'].get_width() // 2), \
                 self.y + (gap // 2) - (IMAGES_EASY['monkey_start'].get_height() // 2)))
 
+    # DRAW STEP-BY-STEP OF BFS ALGORITHM
     def make_closed(self):
         self.color = colors.RED
-
     def make_open(self):
         self.color = colors.GREEN
-
+    
+    # DRAW BARRIER / WALL
     def make_barrier(self):
         self.color = None
         WIN.blit(IMAGES_EASY['barrier_img'], (self.x, self.y))
 
+    # DRAW END / FINISH POINT
     def make_end(self):
         self.color = colors.TURQUOISE
 
+    # DRAW PATH USING 'DOT' OR 'PELLET'
     def make_path(self):
         self.color = None
         WIN.blit(IMAGES_EASY['dot_img'], (self.x + (gap // 2), self.y + (gap // 2)))
 
+    # DRAW CELL
     def draw(self, win):
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
         if self.has_coin:
@@ -78,6 +77,7 @@ class Spot:
             win.blit(IMAGES_EASY['monster'], (self.x + (gap // 2) - (IMAGES_EASY['monster'].get_width() // 2),\
                     self.y + (gap // 2) - (IMAGES_EASY['monster'].get_height() // 2)))
 
+    # UPDATE NEIGHBORS WHILE RUN THE BFS ALGORITHM
     def update_neighbors(self, grid):
         self.neighbors = []
         # DOWN
@@ -97,6 +97,7 @@ class Spot:
     def __lt__(self ):
         return False
 
+# FUNCTION TO SHOW RESULT USING TKINTER
 def show_result(txt):
     window = tk.Tk()
     window.title("Result")
@@ -106,6 +107,7 @@ def show_result(txt):
     label.pack()
     window.mainloop()
 
+# BFS ALGORITHM IMPLEMENTATION
 def bfs(draw, grid, start, end):
     visited = set()
     queue = Queue()
@@ -139,6 +141,8 @@ def bfs(draw, grid, start, end):
     show_result("Path is not found")
     return False
 
+# RECONSTRUCT PATH AFTER ARRIVE IN FINISH POINT
+# if there is no path, this function is not called
 def reconstruct_path(current, draw):
     cost = 0
     while current.previous:
@@ -152,6 +156,7 @@ def reconstruct_path(current, draw):
         draw()
     show_result('Your cost is ' + str(cost))
 
+# CREATE GRID DEPEND ON HOW MANY ROWS & WIDTH
 def make_grid(rows, width):
     grid = []
     gap = width // rows
@@ -163,6 +168,7 @@ def make_grid(rows, width):
 
     return grid
 
+# DRAW LINE TO CREATE GRID
 def draw_grid(win, rows, width):
     gap = width // rows
     for i in range(rows):
@@ -170,6 +176,7 @@ def draw_grid(win, rows, width):
         for j in range(rows):
             pygame.draw.line(win, colors.GREY, (j * gap, 0), (j * gap, width))
 
+# DRAWING ASSETS INSIDE MAZE
 def draw(win, grid, rows, width):
     for row in grid:
         for spot in row:
@@ -187,6 +194,7 @@ def draw(win, grid, rows, width):
     draw_grid(win, rows, width)
     pygame.display.update()
 
+# EVENT HANDLER TO GET POSITION OF CLICKED MOUSE
 def get_clicked_pos(pos, rows, width):
     gap = width // rows
     y, x = pos
@@ -196,6 +204,7 @@ def get_clicked_pos(pos, rows, width):
 
     return row, col
 
+# FUNCTION TO GENERATE RANDOM MAZE
 def generate_random_maze(grid, start, end):
     for row in grid:
         for spot in row:
@@ -221,6 +230,7 @@ def generate_random_maze(grid, start, end):
             spot.has_monster = True
             monster_count += 1
 
+# DRIVER CODE
 def main(win, width):
     grid = make_grid(ROWS_EASY, width)
 
@@ -229,15 +239,20 @@ def main(win, width):
 
     # Add this line to generate a random maze
     generate_random_maze(grid, start, end)
-
+    
+    # GAME LOOP
     run = True
     while run:
         draw(win, grid, ROWS_EASY, width)
+        # FOR EVERY EVENT IN GAME
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-
-            if pygame.mouse.get_pressed()[0]:  # LEFT
+            
+            # IF LEFT BUTTON OF MOUSE CLICKED
+            # FIRST CLICK: PUT START POINT
+            # SECOND CLICK: PUT END POINT
+            if pygame.mouse.get_pressed()[0]:
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS_EASY, width)
                 spot = grid[row][col]
@@ -252,7 +267,9 @@ def main(win, width):
                 elif spot != end and spot != start:
                     spot.make_barrier()
 
-            elif pygame.mouse.get_pressed()[2]:  # RIGHT
+            # IF RIGHT BUTTON OF MOUSE CLICKED
+            # ERASE / RESET CLICKED SPOT
+            elif pygame.mouse.get_pressed()[2]:
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS_EASY, width)
                 spot = grid[row][col]
@@ -261,8 +278,9 @@ def main(win, width):
                     start = None
                 elif spot == end:
                     end = None
-
+            
             if event.type == pygame.KEYDOWN:
+                # START THE GAME IF SPACE IS CLICKED
                 if event.key == pygame.K_SPACE and start and end:
                     for row in grid:
                         for spot in row:
@@ -270,13 +288,8 @@ def main(win, width):
 
                     bfs(lambda: draw(win, grid, ROWS_EASY, width), grid, start, end)
 
-                if event.key == pygame.K_c:
-                    start = None
-                    end = None
-                    grid = make_grid(ROWS_EASY, width)
-
                 # RESET IF BACKSPACE
-                if event.key == pygame.K_BACKSPACE:
+                if event.key == pygame.K_BACKSPACE or event.key == pygame.K_c:
                     start = None
                     end = None
                     grid = make_grid(ROWS_EASY, width)

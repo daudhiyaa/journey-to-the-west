@@ -1,50 +1,33 @@
 import pygame
 import button
 from musics import *
+from images import *
 
 # Reference
 # https://youtu.be/JtiK0DOeI4A
 
+# PYGAME INITIALIZATION
 pygame.init()
 pygame.mixer.init()
 
+# LOAD MUSIC
 pygame.mixer.music.load(JETPACK_JOYRIDE)
 pygame.mixer.music.play(-1, 0.0)
-pygame.mixer.music.set_volume(0.25)
+pygame.mixer.music.set_volume(0.5)
 
-# create game window
+# GAME WINDOW SIZE
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
+# CREATE GAME WINDOW
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Main Menu")
 
-# game variables
+# GAME VARIABLES
 game_main = False
 menu_state = "main"
 
-# define colours
-TEXT_COL = (0, 0, 0)
-
-# load images
-# background
-startup_img = pygame.image.load("assets/img/startup_img.png")
-guidepage_img = pygame.image.load("assets/img/guide_page.png")
-main_img = pygame.image.load("assets/img/main_img.png")
-modepage_img = pygame.image.load("assets/img/mode_page.png")
-# main menu
-start_img = pygame.image.load("assets/img/start_img.png")
-guide_img = pygame.image.load("assets/img/guide_img.png")
-exit_img = pygame.image.load("assets/img/exit_img.png")
-back_img = pygame.image.load("assets/img/back_img.png")
-# mode menu
-easy_mode = pygame.image.load("assets/img/easy_mode.png")
-medium_mode = pygame.image.load("assets/img/medium_mode.png")
-hard_mode = pygame.image.load("assets/img/hard_mode.png")
-random_mode = pygame.image.load("assets/img/random_mode.png")
-custom_mode = pygame.image.load("assets/img/custom_mode.png")
-
-# create button instances
+# BUTTON INSTANCES
 # main menu
 start_button = button.Button(260, 240, start_img, 0.525)
 guide_button = button.Button(260, 340, guide_img, 0.525)
@@ -58,11 +41,9 @@ random_button = button.Button(400, 240, random_mode, 0.45)
 custom_button = button.Button(400, 340, custom_mode, 0.45)
 backfrommode_button = button.Button(400, 440, back_img, 0.45)
 
-
-# game loop
+# GAME LOOP
 run = True
 while run:
-
     # background color
     screen.blit(startup_img, (0, 0))
 
@@ -73,7 +54,6 @@ while run:
             # draw start screen buttons
             if start_button.draw(screen):
                 menu_state = "mode"
-                # import algo_bfs  # Import the algo.py program here
             if guide_button.draw(screen):
                 menu_state = "guide"
             if exit_button.draw(screen):
@@ -101,7 +81,7 @@ while run:
             if backfrommode_button.draw(screen):
                 menu_state = "main"
 
-    # event handler
+    # EVENT HANDLER
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
             game_main = True

@@ -3,10 +3,13 @@ import colors
 from queue import Queue
 from config_levels import *
 
+# BASE INITIALIZATION
 gap = WIDTH // ROWS_MEDIUM
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("Treasure Hunt")
 
+# 'CELL' CLASS
+# Cell inside maze
 class Spot:
     def __init__(self, row, col, width, total_rows):
         self.row = row
@@ -18,53 +21,49 @@ class Spot:
         self.width = width
         self.total_rows = total_rows
         self.previous = None
-
+    
+    # GET POSITION (X and Y)
     def get_pos(self):
         return self.row, self.col
-
-    def is_closed(self):
-        return self.color == colors.RED
-
-    def is_open(self):
-        return self.color == colors.GREEN
-
+    
+    # RESET TO BASE MAZE
+    def reset(self):
+        self.color = colors.WHITE
+        self.previous = None
+    
+    # CHECK IS BARRIER OR NOT
     def is_barrier(self):
         return self.color is None
 
-    def is_start(self):
-        return self.color == colors.YELLOW
-
-    def is_end(self):
-        return self.color == colors.TURQUOISE
-
-    def reset(self):
-        self.color =  colors.WHITE
-        self.previous = None
-
+    # DRAW STARTING POINT
     def make_start(self):
         self.color = colors.YELLOW
 
+    # DRAW STEP-BY-STEP OF BFS ALGORITHM
     def make_closed(self):
         self.color = colors.RED
-
     def make_open(self):
         self.color = colors.GREEN
-
+    
+    # DRAW BARRIER / WALL
     def make_barrier(self):
         self.color = None
         WIN.blit(IMAGES_MEDIUM['barrier_img'], (self.x, self.y))
 
+    # DRAW END / FINISH POINT
     def make_end(self):
         self.color = colors.TURQUOISE
 
+    # DRAW PATH USING 'DOT' OR 'PELLET'
     def make_path(self):
         self.color = None
         WIN.blit(IMAGES_MEDIUM['dot_img'], (self.x + (gap // 2), self.y + (gap // 2)))
 
+    # DRAW CELL
     def draw(self, win):
-        pygame.draw.rect(
-            win, self.color, (self.x, self.y, self.width, self.width))
+        pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
 
+    # UPDATE NEIGHBORS WHILE RUN THE BFS ALGORITHM
     def update_neighbors(self, grid):
         self.neighbors = []
         # DOWN
@@ -84,6 +83,7 @@ class Spot:
     def __lt__(self ):
         return False
 
+# BFS ALGORITHM IMPLEMENTATION
 def bfs(draw, grid, start, end):
     visited = set()
     queue = Queue()
@@ -116,12 +116,15 @@ def bfs(draw, grid, start, end):
 
     return False
 
+# RECONSTRUCT PATH AFTER ARRIVE IN FINISH POINT
+# if there is no path, this function is not called
 def reconstruct_path(current, draw):
     while current.previous:
         current = current.previous
         current.make_path()
         draw()
 
+# CREATE GRID DEPEND ON HOW MANY ROWS & WIDTH
 def make_grid(rows, width):
     grid = []
     gap = width // rows
@@ -133,17 +136,7 @@ def make_grid(rows, width):
 
     return grid
 
-def make_grid(rows, width):
-    grid = []
-    gap = width // rows
-    for i in range(rows):
-        grid.append([])
-        for j in range(rows):
-            spot = Spot(i, j, gap, rows)
-            grid[i].append(spot)
-
-    return grid
-
+# DRAW LINE TO CREATE GRID
 def draw_grid(win, rows, width):
     gap = width // rows
     for i in range(rows):
@@ -151,6 +144,7 @@ def draw_grid(win, rows, width):
         for j in range(rows):
             pygame.draw.line(win, colors.GREY, (j * gap, 0), (j * gap, width))
 
+# DRAWING ASSETS INSIDE MAZE
 def draw(win, grid, rows, width):
     for row in grid:
         for spot in row:
@@ -162,6 +156,7 @@ def draw(win, grid, rows, width):
     draw_grid(win, rows, width)
     pygame.display.update()
 
+# EVENT HANDLER TO GET POSITION OF CLICKED MOUSE
 def get_clicked_pos(pos, rows, width):
     gap = width // rows
     y, x = pos
@@ -171,20 +166,27 @@ def get_clicked_pos(pos, rows, width):
 
     return row, col
 
+# DRIVER CODE
 def main(win, width):
     grid = make_grid(ROWS_MEDIUM, width)
 
     start = None
     end = None
 
+    # GAME LOOP
     run = True
     while run:
         draw(win, grid, ROWS_MEDIUM, width)
+        # FOR EVERY EVENT IN GAME
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-
-            if pygame.mouse.get_pressed()[0]:  # LEFT
+            
+            # IF LEFT BUTTON OF MOUSE CLICKED
+            # FIRST CLICK: PUT START POINT
+            # SECOND CLICK: PUT END POINT
+            # ELSE: DRAW BARRIER
+            if pygame.mouse.get_pressed()[0]:
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS_MEDIUM, width)
                 spot = grid[row][col]
@@ -198,8 +200,10 @@ def main(win, width):
 
                 elif spot != end and spot != start:
                     spot.make_barrier()
-
-            elif pygame.mouse.get_pressed()[2]:  # RIGHT
+            
+            # IF RIGHT BUTTON OF MOUSE CLICKED
+            # ERASE / RESET CLICKED SPOT
+            elif pygame.mouse.get_pressed()[2]:
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS_MEDIUM, width)
                 spot = grid[row][col]
@@ -210,6 +214,7 @@ def main(win, width):
                     end = None
 
             if event.type == pygame.KEYDOWN:
+                # START THE GAME IF SPACE IS CLICKED
                 if event.key == pygame.K_SPACE and start and end:
                     for row in grid:
                         for spot in row:
@@ -217,13 +222,8 @@ def main(win, width):
 
                     bfs(lambda: draw(win, grid, ROWS_MEDIUM, width), grid, start, end)
 
-                if event.key == pygame.K_c:
-                    start = None
-                    end = None
-                    grid = make_grid(ROWS_MEDIUM, width)
-
                 # RESET IF BACKSPACE
-                if event.key == pygame.K_BACKSPACE:
+                if event.key == pygame.K_BACKSPACE or event.key == pygame.K_c:
                     start = None
                     end = None
                     grid = make_grid(ROWS_MEDIUM, width)
